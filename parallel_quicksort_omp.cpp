@@ -1,6 +1,7 @@
 /*! 
  *	\brief	Parallel quicksort using OpenMP
- *
+ *	\author	Christian Magnerfelt
+ *	\email	magnerf@kth.se	
  */
 #include <omp.h>
 #include <iostream>
@@ -8,25 +9,34 @@
 #include <vector>
 #include <iterator>
 
-//! global variables
-const long g_sortCutoff = 1000;
-const std::size_t g_numOfPivots = 10;
-const std::size_t g_maxSize = 10000000;	//!< Maximum array size
+// global variables
+const long g_sortCutoff = 1000;				//!< cutoff to use std::sort
+const std::size_t g_numOfPivots = 10;		//!< number of pivots for parition. only one is choosen in the end.
+const std::size_t g_maxSize = 100000000;	//!< Maximum array size
 const std::size_t g_maxThreads = 128;		//!< Maximum number of threads
 std::size_t g_numThreads;
 std::size_t g_size;
 
+/*!		\brief			Templated parallel quicksort
+ *		\description	Sorts range in parallel using quicksort given that iterators are random-access
+ * 						and value supports assigment and operator<
+ */
 template <typename T, typename RandomIt>
 void parallelQuicksort(RandomIt start, RandomIt end)
 {
+	// Create a staic array of pivots
 	static std::vector<T> pivots (g_numOfPivots);
+	
+	// Calculate the number of elements in the range
 	auto distance = std::distance(start, end);
+	// If number of elements are less than cutoff then use std::sort
 	if(distance < g_sortCutoff)
 	{
 		std::sort(start, end);
 	}
 	else
 	{
+		// Select pivots on random
 		RandomIt it;
 		for(std::size_t i = 0; i < pivots.size(); ++i)
 		{
@@ -56,6 +66,7 @@ void parallelQuicksort(RandomIt start, RandomIt end)
 			return;
 		}
 		
+		// Do parallel quicksort on each partition
 		#pragma omp task shared(start, middle)
 		{
 			parallelQuicksort<T, RandomIt>(start, middle);
@@ -64,7 +75,7 @@ void parallelQuicksort(RandomIt start, RandomIt end)
 		{
 			parallelQuicksort<T, RandomIt>(middle, end);
 		}
-		
+		// Wait for tasks to complete
 		#pragma omp taskwait
 	}
 }
@@ -89,7 +100,7 @@ int main(int argc, const char *argv [])
 	
 	start_time = omp_get_wtime();
 	
-	// DO WORK	
+	// Do parallel quicksort on array data
 	#pragma omp parallel shared(arrayData)
 	{
 		#pragma omp single nowait

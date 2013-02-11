@@ -1,0 +1,47 @@
+Performance Evaluation - Parallel Quicksort
+----------------------
+Author: Christian Magnerfelt
+Email: magnerf@kth.se
+
+HARDWARE = Intel Core i7-2600 3,40 GHz ( 8 HW THREADS )
+OS = UBUNTU 64 
+
+Test data:
+- cutoff to std::sort at 1000 elements
+- 10 pivot elements
+
+
+1)
+Num elements	10000000	10^7				
+
+4 Test with running time and avg in seconds
+						
+HW Threads	Test 1		Test 2		Test 3		Test 4		AVG			Speed Up
+1			0.342688	0.339794	0.342999	0.342924	0.34210125	1
+2			0.221639	0.219635	0.222146	0.221807	0.22130675	1.5458238395
+3			0.206681	0.210797	0.20523		0.207338	0.2075115	1.6485893553
+4			0.189914	0.20935		0.189914	0.194035	0.19580325	1.7471683948					
+
+2)					
+Num elements	100000	10^5				
+						
+HW Threads	Test 1		Test 2		Test 3		Test 4		AVG				Speed Up
+1			0.00295485	0.00285735	0.00272659	0.00329707	0.002958965		1
+2			0.00218323	0.00267492	0.00271627	0.00199746	0.00239297		1.2365240684
+3			0.0032255	0.00287634	0.003725	0.00287161	0.0031746125	0.932071237
+4			0.00406522	0.00361085	0.00227706	0.00339207	0.0033363		0.8869001589
+
+3)					
+Num elements	100000000	10^8				
+						
+HW Threads	Test 1		Test 2		Test 3		Test 4		AVG			Speed Up
+1			3.61262		3.57064		3.6155		3.62058		3.604835	1
+2			3.27617		3.32473		3.31361		3.32939		3.310975	1.0887533128
+3			2.42995		2.38759		2.41643		2.39516		2.4072825	1.4974706957
+4			1.71552		2.25147		1.72935		1.71498		1.85283		1.9455832429
+
+Discussion:
+To start off we get a speed increase from 1 to 2 threads in all test which shows. However when using a smaller test set in this case 10000 3 and 4 threads do not give a speed up and rather a slowdown. This is probably due to the fact that we are using a high cutoff value. If we put the cutoff value lower maybe it would have yielded a better result.
+In our implementation we are also using task which may and may not run in parallel. This in turn might result in an uneven load balancing.
+There is also a problem with the values we generate. Because the generated values are 0 - 99 it means that many parition may end up with few distinct values which in turn means that the partitions may be unbalanced due to selection of a poor pivot value.
+
